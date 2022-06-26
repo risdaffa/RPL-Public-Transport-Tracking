@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:public_transport_tracking/screen/home_screen.dart';
@@ -8,7 +6,7 @@ import 'package:public_transport_tracking/screen/profile_screen.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 
 void main() {
-  runApp(ProviderScope(child: const MyApp()));
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -63,8 +61,6 @@ class MyApp extends StatelessWidget {
         ),
         visualDensity: FlexColorScheme.comfortablePlatformDensity,
         useMaterial3: true,
-        // To use the playground font, add GoogleFonts package and uncomment
-        // fontFamily: GoogleFonts.notoSans().fontFamily,
       ),
       home: const BottomNavigation(),
     );

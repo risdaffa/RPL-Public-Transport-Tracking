@@ -39,6 +39,8 @@ dependencies:
   flex_color_scheme: ^5.0.1
   riverpod: ^1.0.3
   flutter_riverpod: ^1.0.4
+  google_fonts: ^3.0.1
+  cloud_firestore: ^3.1.18
 
 dev_dependencies:
   flutter_test:
@@ -80,7 +82,11 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
+  fonts:
+  - family: JejuGothic
+    fonts :
+      - asset: fonts/JejuGothic-Regular.ttf
+  #   fonts:
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf
