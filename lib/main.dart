@@ -4,10 +4,18 @@ import 'package:public_transport_tracking/screen/home_screen.dart';
 import 'package:public_transport_tracking/screen/list_screen.dart';
 import 'package:public_transport_tracking/screen/profile_screen.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const ProviderScope(child: MyApp()));
 }
+
+final navigatorKey = GlobalKey<NavigatorState>();
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -16,6 +24,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Flutter Demo',
       themeMode: ThemeMode.light,
       theme: FlexThemeData.light(

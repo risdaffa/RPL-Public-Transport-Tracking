@@ -29,6 +29,13 @@
             {
               "client_id": "421282917312-unrln0i97dir0lsd6qa7sj6aj8rl36nu.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "421282917312-llru6p28pcrmr41q92tla2gr0clr1i1a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.transportTracking"
+              }
             }
           ]
         }
