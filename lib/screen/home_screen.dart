@@ -1,5 +1,10 @@
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:public_transport_tracking/models/transportation.dart';
+import 'package:public_transport_tracking/screen/profile_screen.dart';
 
 final drawerProvider = StateProvider<bool>((ref) => false);
 
@@ -12,6 +17,45 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   int _index = 0;
+  List<Transportation> _listTransport = [];
+  List<Rute> _lineRoute = [];
+  List<Time> _listTime = [];
+  final _random = Random();
+  // final Transportation _transport;
+  // _LihatJadwalPageState(this._transport);
+  final db = FirebaseFirestore.instance;
+
+  @override
+  void didChangeDependencies() {
+    getTransportList();
+    getLineList();
+    getTimeList();
+    super.didChangeDependencies();
+  }
+
+  Future getTransportList() async {
+    var dataTransport = await db.collection("transportation").get();
+    setState(() {
+      _listTransport = List.from(
+          dataTransport.docs.map((e) => Transportation.fromSnapshot(e)));
+    });
+  }
+
+  Future getLineList() async {
+    var dataLineRoute = await db.collection("rute").get();
+    setState(() {
+      _lineRoute =
+          List.from(dataLineRoute.docs.map((e) => Rute.fromSnapshot(e)));
+    });
+  }
+
+  Future getTimeList() async {
+    var dataTime = await db.collection("time").get();
+    setState(() {
+      _listTime = List.from(dataTime.docs.map((e) => Time.fromSnapshot(e)));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final _drawerState = ref.watch(drawerProvider);
@@ -99,12 +143,23 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     onTap: () {
                                       print('Bus');
                                     },
-                                    child: _btnTransport(
-                                      const Icon(Icons.directions_bus,
-                                          size: 38,
-                                          color: Color.fromARGB(
-                                              255, 71, 209, 144)),
-                                      const Color.fromRGBO(235, 251, 242, 1),
+                                    child: Stack(
+                                      alignment: Alignment.bottomCenter,
+                                      children: [
+                                        _btnTransport(
+                                          const Icon(Icons.directions_bus,
+                                              size: 38,
+                                              color: Color.fromARGB(
+                                                  255, 71, 209, 144)),
+                                          const Color.fromRGBO(
+                                              235, 251, 242, 1),
+                                        ),
+                                        const Text('Bus',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                color: Color.fromARGB(
+                                                    255, 71, 209, 144)))
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -117,14 +172,25 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     splashColor:
                                         const Color.fromRGBO(253, 245, 235, 1),
                                     onTap: () {},
-                                    child: _btnTransport(
-                                      const Icon(
-                                          Icons
-                                              .directions_subway_filled_outlined,
-                                          size: 38,
-                                          color: Color.fromARGB(
-                                              255, 243, 148, 72)),
-                                      const Color.fromRGBO(253, 245, 235, 1),
+                                    child: Stack(
+                                      alignment: Alignment.bottomCenter,
+                                      children: [
+                                        _btnTransport(
+                                          const Icon(
+                                              Icons
+                                                  .directions_subway_filled_outlined,
+                                              size: 38,
+                                              color: Color.fromARGB(
+                                                  255, 243, 148, 72)),
+                                          const Color.fromRGBO(
+                                              253, 245, 235, 1),
+                                        ),
+                                        const Text('Train',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                color: Color.fromARGB(
+                                                    255, 243, 148, 72)))
+                                      ],
                                     ),
                                   ),
                                 ),
@@ -141,22 +207,37 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           _subMenuTitle('History Tracking'),
           SliverToBoxAdapter(
-            child: SizedBox(
-              height: 100,
-              child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) {
-                    return _transportCard('Jogja - Solo', 'KRL', '13/06/2022');
-                  }),
-            ),
+            child: (_lineRoute.isNotEmpty &&
+                    _listTransport.isNotEmpty &&
+                    _listTime.isNotEmpty)
+                ? SizedBox(
+                    height: 100,
+                    child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index) {
+                          return _transportCard(
+                              '${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]} - ${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]}',
+                              '${_listTransport[_random.nextInt(_listTransport.length)].name}',
+                              '13/06/2022');
+                        }),
+                  )
+                : CircularProgressIndicator(),
           ),
           _subMenuTitle('Real-time Schedule'),
           SliverList(
             delegate: SliverChildBuilderDelegate(
               childCount: 5,
               (context, index) {
-                return _realtimeHomeCard('From St. Balapan', 'KRL',
-                    '00/00/0000', 'Now - 20.35', 'Solo');
+                return (_lineRoute.isNotEmpty &&
+                        _listTransport.isNotEmpty &&
+                        _listTime.isNotEmpty)
+                    ? _realtimeHomeCard(
+                        'From ${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]}',
+                        '${_listTransport[_random.nextInt(_listTransport.length)].name}',
+                        '04/06/2022',
+                        'Now - ${_listTime[_random.nextInt(_listTime.length)].go}',
+                        'Solo')
+                    : CircularProgressIndicator();
               },
             ),
           )
@@ -261,7 +342,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget _transportCard(String route, String name, String date) {
     return Container(
       margin: const EdgeInsets.only(left: 20),
-      width: 150,
+      width: 200,
+      constraints: BoxConstraints(minWidth: 240),
       decoration: BoxDecoration(
           color: Colors.white, borderRadius: BorderRadius.circular(10.0)),
       child: Row(
@@ -274,24 +356,30 @@ class _HomePageState extends ConsumerState<HomePage> {
               color: Color.fromARGB(255, 243, 148, 72),
             ),
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '$route',
-                style:
-                    const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-              ),
-              Text(
-                '$name',
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              Text(
-                '$date',
-                style: const TextStyle(fontSize: 12),
-              )
-            ],
+          SizedBox(
+            width: 190,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$route',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      overflow: TextOverflow.ellipsis),
+                ),
+                Text(
+                  '$name',
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                Text(
+                  '$date',
+                  style: const TextStyle(fontSize: 12),
+                )
+              ],
+            ),
           )
         ],
       ),

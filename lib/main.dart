@@ -86,7 +86,7 @@ class BottomNavigation extends ConsumerStatefulWidget {
 class _BottomNavigationState extends ConsumerState<BottomNavigation> {
   int _index = 0;
 
-  final screen = [const HomePage(), const ListPage(), const ProfilePage()];
+  final screen = [const HomePage(), ListPage(), const ProfilePage()];
 
   @override
   Widget build(BuildContext context) {
