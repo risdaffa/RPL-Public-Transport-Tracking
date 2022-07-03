@@ -35,86 +35,126 @@ class ProfileLoggedIn extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       backgroundColor: const Color.fromRGBO(225, 245, 254, 1),
       body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            children: [
-              const SizedBox(
-                width: 2,
-                height: 60,
+        child: Stack(alignment: Alignment.bottomRight, children: [
+          Positioned(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: Container(
+                color: Color.fromRGBO(178, 217, 255, 1),
+                width: 210,
+                height: 210,
               ),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(180),
-                child: SizedBox(
-                  width: 155,
-                  height: 155,
-                  child: CachedNetworkImage(
-                    imageUrl:
-                        'https://images.squarespace-cdn.com/content/v1/519d1bb9e4b09e4694bff22c/1582149849802-ZC7E0T9PBX3Q9SF7AV23/profile-placeholder.png?format=500w',
-                    placeholder: (context, url) =>
-                        const CircularProgressIndicator(),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 2, height: 39),
-              _subText('USERNAME'),
-              Container(
-                alignment: AlignmentDirectional.centerStart,
-                width: 265,
-                height: 37,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 4, horizontal: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.white,
-                ),
-                child: Text(
-                  _fbAuth.currentUser!.displayName.toString(),
-                  style: const TextStyle(fontSize: 15),
-                ),
-              ),
-              const SizedBox(width: 2, height: 15),
-              _subText('EMAIL'),
-              _valueContainer(
-                FirebaseAuth.instance.currentUser!.email.toString(),
-                const Color.fromRGBO(222, 222, 222, 0.7),
-              ),
-              const SizedBox(height: 25),
-              TextButton(
-                onPressed: () {},
-                style: ButtonStyle(
-                  fixedSize: MaterialStateProperty.all(const Size(265, 55)),
-                  shape: MaterialStateProperty.all(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                  ),
-                  backgroundColor: MaterialStateProperty.all(
-                    const Color.fromRGBO(9, 128, 42, 1),
-                  ),
-                ),
-                child: Text(
-                  'UBAH PROFIL',
-                  style: GoogleFonts.bebasNeue(
-                      color: Colors.white, fontSize: 28, letterSpacing: 2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _iconTextBtn(
-                  'BOOKMARK',
-                  28,
-                  Icons.share_location,
-                  const Size(265, 55),
-                  const Color.fromRGBO(13, 71, 161, 1),
-                  () {}),
-              const SizedBox(height: 100),
-              _iconTextBtn('KELUAR', 20, Icons.exit_to_app, const Size(147, 50),
-                  const Color.fromRGBO(255, 0, 0, 1), () async {
-                await FirebaseAuth.instance.signOut();
-              }),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            right: -70,
+            bottom: 80,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: Container(
+                color: Color.fromRGBO(9, 127, 255, 0.55),
+                width: 210,
+                height: 210,
+              ),
+            ),
+          ),
+          Positioned(
+            right: -50,
+            bottom: 5,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: Container(
+                color: Color.fromRGBO(33, 113, 200, 0.55),
+                width: 100,
+                height: 100,
+              ),
+            ),
+          ),
+          Center(
+            child: Column(
+              children: [
+                const SizedBox(
+                  width: 2,
+                  height: 60,
+                ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(180),
+                  child: SizedBox(
+                    width: 155,
+                    height: 155,
+                    child: CachedNetworkImage(
+                      imageUrl:
+                          'https://images.squarespace-cdn.com/content/v1/519d1bb9e4b09e4694bff22c/1582149849802-ZC7E0T9PBX3Q9SF7AV23/profile-placeholder.png?format=500w',
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 2, height: 39),
+                _subText('USERNAME'),
+                Container(
+                  alignment: AlignmentDirectional.centerStart,
+                  width: 265,
+                  height: 37,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.white,
+                  ),
+                  child: Text(
+                    _fbAuth.currentUser!.displayName.toString(),
+                    style: const TextStyle(fontSize: 15),
+                  ),
+                ),
+                const SizedBox(width: 2, height: 15),
+                _subText('EMAIL'),
+                _valueContainer(
+                  FirebaseAuth.instance.currentUser!.email.toString(),
+                  const Color.fromRGBO(222, 222, 222, 0.7),
+                ),
+                const SizedBox(height: 25),
+                TextButton(
+                  onPressed: () {},
+                  style: ButtonStyle(
+                    fixedSize: MaterialStateProperty.all(const Size(265, 55)),
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                    backgroundColor: MaterialStateProperty.all(
+                      const Color.fromRGBO(9, 128, 42, 1),
+                    ),
+                  ),
+                  child: Text(
+                    'UBAH PROFIL',
+                    style: GoogleFonts.bebasNeue(
+                        color: Colors.white, fontSize: 28, letterSpacing: 2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _iconTextBtn(
+                    'BOOKMARK',
+                    28,
+                    Icons.share_location,
+                    const Size(265, 55),
+                    const Color.fromRGBO(13, 71, 161, 1),
+                    () {}),
+                const SizedBox(height: 100),
+                _iconTextBtn(
+                    'KELUAR',
+                    20,
+                    Icons.exit_to_app,
+                    const Size(147, 50),
+                    const Color.fromRGBO(255, 0, 0, 1), () async {
+                  await FirebaseAuth.instance.signOut();
+                }),
+              ],
+            ),
+          ),
+        ]),
       ),
     );
   }
