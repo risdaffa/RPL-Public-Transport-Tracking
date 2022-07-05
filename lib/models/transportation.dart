@@ -38,3 +38,13 @@ class Time {
         go = snapshot.data()['go'],
         id_time = snapshot.data()['id_time'];
 }
+
+class City {
+  List<String> name;
+  City(this.name);
+  Map<String, dynamic> toJson() => {
+        'name': name,
+      };
+  City.fromSnapshot(snapshot)
+      : name = List<String>.from(snapshot.data()['name']);
+}
