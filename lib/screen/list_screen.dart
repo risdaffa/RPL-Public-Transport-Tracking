@@ -7,6 +7,7 @@ import 'package:public_transport_tracking/screen/bookmark_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:public_transport_tracking/screen/details_screen.dart';
 import 'package:public_transport_tracking/screen/profile_screen.dart';
+import 'package:public_transport_tracking/screen/search_screen.dart';
 
 class ListPage extends StatefulWidget {
   ListPage({Key? key}) : super(key: key);
@@ -23,22 +24,6 @@ class _ListPageState extends State<ListPage> {
     _controller.animateTo(0,
         duration: const Duration(milliseconds: 600), curve: Curves.easeIn);
   }
-
-  // @override
-  // void initState() {
-  //   _controller.addListener(() {
-  //     if (_controller.offset > _controller.position.minScrollExtent) {
-  //       setState(() {
-  //         _isvisible = true;
-  //       });
-  //     } else {
-  //       setState(() {
-  //         _isvisible = false;
-  //       });
-  //     }
-  //   });
-  //   super.initState();
-  // }
 
   @override
   void dispose() {
@@ -68,7 +53,14 @@ class _ListPageState extends State<ListPage> {
                   floating: true,
                   title: const Text('Jadwal Transportasi'),
                   actions: [
-                    IconButton(onPressed: () {}, icon: const Icon(Icons.search))
+                    IconButton(
+                        onPressed: () {
+                          Navigator.of(context)
+                              .push(MaterialPageRoute(builder: (context) {
+                            return SearchPage();
+                          }));
+                        },
+                        icon: const Icon(Icons.search))
                   ],
                   bottom: const TabBar(
                     tabs: [Tab(text: 'Lihat Jadwal'), Tab(text: 'Bookmark')],
@@ -144,7 +136,7 @@ class _LihatJadwalPageState extends State<LihatJadwalPage> {
             itemBuilder: ((context, index) {
               return _realtimeHomeCard(
                   '${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]}',
-                  '${_listTransport[_random.nextInt(_listTransport.length)].name}',
+                  _listTransport[_random.nextInt(_listTransport.length)],
                   '${_listTime[_random.nextInt(_listTime.length)].go}',
                   '${_listTime[_random.nextInt(_listTime.length)].arrive}',
                   '${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]}');
@@ -154,7 +146,7 @@ class _LihatJadwalPageState extends State<LihatJadwalPage> {
         : LoadingCircle();
   }
 
-  Widget _realtimeHomeCard(String origin, String name, String initTime,
+  Widget _realtimeHomeCard(String origin, Transportation name, String initTime,
       String endTime, String destination) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 9.0),
@@ -184,11 +176,15 @@ class _LihatJadwalPageState extends State<LihatJadwalPage> {
                   children: [
                     Container(
                       padding: const EdgeInsets.only(right: 10.0, left: 12.0),
-                      child: const Icon(
-                        Icons.directions_subway_filled_outlined,
-                        size: 70,
-                        color: Color.fromARGB(255, 243, 148, 72),
-                      ),
+                      child: (name.type.toString() == 'train')
+                          ? const Icon(
+                              Icons.directions_subway_filled_outlined,
+                              size: 70,
+                              color: Color.fromARGB(255, 243, 148, 72),
+                            )
+                          : const Icon(Icons.directions_bus,
+                              size: 70,
+                              color: Color.fromARGB(255, 71, 209, 144)),
                     ),
                     Text('#${Random().nextInt(1000)}')
                   ],
@@ -198,61 +194,90 @@ class _LihatJadwalPageState extends State<LihatJadwalPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$name',
+                      '${name.name}',
                       style: GoogleFonts.bebasNeue(
                           letterSpacing: 1.2,
                           fontWeight: FontWeight.w500,
                           fontSize: 25,
                           height: 1.2),
                     ),
-                    Row(
-                      children: [
-                        Container(
-                          width: 140,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('From : ',
-                                  style: TextStyle(height: 0.8)),
-                              Text(
-                                '$origin',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w500, fontSize: 16),
-                              ),
-                              Text(
-                                '$initTime',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ],
+                    Container(
+                      width: 250,
+                      height: 50,
+                      margin: EdgeInsets.only(left: 12, top: 8),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 50,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '$origin',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 4.0),
+                                      child: Icon(
+                                        Icons.timer_outlined,
+                                        size: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      '$initTime',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.only(left: 12, top: 3),
-                          height: 60,
-                          decoration: const BoxDecoration(
-                              border: Border(
-                                  left: BorderSide(
-                                      color: Colors.black, width: 1.0))),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('To : ',
-                                  style: const TextStyle(height: 0.8)),
-                              Text(
-                                '$destination',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w500, fontSize: 16),
-                              ),
-                              Text(
-                                '$endTime',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
+                          Icon(Icons.arrow_right),
+                          Container(
+                            padding: const EdgeInsets.only(left: 12),
+                            height: 50,
+                            width: 110,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '$destination',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      overflow: TextOverflow.ellipsis),
+                                ),
+                                Row(
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 4.0),
+                                      child: Icon(
+                                        Icons.timer_outlined,
+                                        size: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      '$endTime',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   ],
                 ),

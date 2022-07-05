@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:public_transport_tracking/models/transportation.dart';
+import 'package:public_transport_tracking/screen/details_screen.dart';
 import 'package:public_transport_tracking/screen/profile_screen.dart';
 
 final drawerProvider = StateProvider<bool>((ref) => false);
@@ -20,6 +21,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   List<Transportation> _listTransport = [];
   List<Rute> _lineRoute = [];
   List<Time> _listTime = [];
+  List<City> _listCity = [];
   final _random = Random();
   // final Transportation _transport;
   // _LihatJadwalPageState(this._transport);
@@ -27,32 +29,22 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   void didChangeDependencies() {
-    getTransportList();
-    getLineList();
-    getTimeList();
+    getFirebase();
     super.didChangeDependencies();
   }
 
-  Future getTransportList() async {
+  Future getFirebase() async {
     var dataTransport = await db.collection("transportation").get();
+    var dataLineRoute = await db.collection("rute").get();
+    var dataTime = await db.collection("time").get();
+    var dataCity = await db.collection("city").get();
     setState(() {
       _listTransport = List.from(
           dataTransport.docs.map((e) => Transportation.fromSnapshot(e)));
-    });
-  }
-
-  Future getLineList() async {
-    var dataLineRoute = await db.collection("rute").get();
-    setState(() {
       _lineRoute =
           List.from(dataLineRoute.docs.map((e) => Rute.fromSnapshot(e)));
-    });
-  }
-
-  Future getTimeList() async {
-    var dataTime = await db.collection("time").get();
-    setState(() {
       _listTime = List.from(dataTime.docs.map((e) => Time.fromSnapshot(e)));
+      _listCity = List.from(dataCity.docs.map((e) => City.fromSnapshot(e)));
     });
   }
 
@@ -216,12 +208,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                         scrollDirection: Axis.horizontal,
                         itemBuilder: (context, index) {
                           return _transportCard(
-                              '${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]} - ${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]}',
-                              '${_listTransport[_random.nextInt(_listTransport.length)].name}',
+                              '${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]}',
+                              '${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]}',
+                              _listTransport[
+                                  _random.nextInt(_listTransport.length)],
                               '13/06/2022');
                         }),
                   )
-                : CircularProgressIndicator(),
+                : _widgetLoadingIndicator(),
           ),
           _subMenuTitle('Real-time Schedule'),
           SliverList(
@@ -232,12 +226,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                         _listTransport.isNotEmpty &&
                         _listTime.isNotEmpty)
                     ? _realtimeHomeCard(
-                        'From ${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]}',
-                        '${_listTransport[_random.nextInt(_listTransport.length)].name}',
+                        '${_lineRoute[_random.nextInt(_lineRoute.length)].rute[_random.nextInt(6)]}',
+                        _listTransport[_random.nextInt(_listTransport.length)],
                         '04/06/2022',
                         'Now - ${_listTime[_random.nextInt(_listTime.length)].go}',
-                        'Solo')
-                    : CircularProgressIndicator();
+                        '${_listCity[0].name[_random.nextInt(_listCity.first.name.length)]}')
+                    : _widgetLoadingIndicator();
               },
             ),
           )
@@ -271,117 +265,151 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _realtimeHomeCard(
-      String origin, String name, String date, String time, String city) {
+  SizedBox _widgetLoadingIndicator() {
+    return const SizedBox(
+        width: 10,
+        height: 100,
+        child: Center(child: CircularProgressIndicator()));
+  }
+
+  Widget _realtimeHomeCard(String origin, Transportation name, String date,
+      String time, String city) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 25.0),
-      child: Card(
-        child: Container(
-          height: 100,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: Row(
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(right: 10.0, left: 12.0),
-                child: Icon(
-                  Icons.directions_subway_filled_outlined,
-                  size: 38,
-                  color: Color.fromARGB(255, 243, 148, 72),
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+            return DetailsPage(
+                destination: city, initTime: time, name: name, origin: origin);
+          }));
+        },
+        child: Card(
+          child: Container(
+            height: 100,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Row(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(right: 10.0, left: 12.0),
+                  child: (name.type.toString() == 'train')
+                      ? const Icon(
+                          Icons.directions_subway_filled_outlined,
+                          size: 38,
+                          color: Color.fromARGB(255, 243, 148, 72),
+                        )
+                      : const Icon(Icons.directions_bus,
+                          size: 38, color: Color.fromARGB(255, 71, 209, 144)),
                 ),
-              ),
-              SizedBox(
-                width: 180,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$origin',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w500, fontSize: 16),
-                    ),
-                    Text(
-                      '$name',
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    Text(
-                      '$date',
-                      style: const TextStyle(fontSize: 12),
-                    )
-                  ],
+                SizedBox(
+                  width: 170,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'From $origin',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w500, fontSize: 16),
+                      ),
+                      Text(
+                        '${name.name}',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      Text(
+                        '$date',
+                        style: const TextStyle(fontSize: 12),
+                      )
+                    ],
+                  ),
                 ),
-              ),
-              Container(
-                margin: const EdgeInsets.only(left: 4),
-                height: 60,
-                width: 80,
-                decoration: const BoxDecoration(
-                    border: Border(
-                        left: BorderSide(color: Colors.black, width: 1.0))),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '$time',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    Text('$city'),
-                  ],
-                ),
-              )
-            ],
+                Container(
+                  margin: const EdgeInsets.only(left: 4),
+                  height: 60,
+                  width: 90,
+                  decoration: const BoxDecoration(
+                      border: Border(
+                          left: BorderSide(color: Colors.black, width: 1.0))),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '$time',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      Text('$city'),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _transportCard(String route, String name, String date) {
-    return Container(
-      margin: const EdgeInsets.only(left: 20),
-      width: 200,
-      constraints: BoxConstraints(minWidth: 240),
-      decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(10.0)),
-      child: Row(
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(right: 4.0, left: 4),
-            child: Icon(
-              Icons.directions_subway_filled_outlined,
-              size: 38,
-              color: Color.fromARGB(255, 243, 148, 72),
+  Widget _transportCard(
+      String origin, String destination, Transportation name, String date) {
+    return InkWell(
+      onTap: (() {
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+          return DetailsPage(
+              destination: destination,
+              initTime:
+                  _listTime[_random.nextInt(_listTime.length)].go.toString(),
+              name: name,
+              origin: origin);
+        }));
+      }),
+      child: Container(
+        margin: const EdgeInsets.only(left: 20),
+        width: 200,
+        constraints: BoxConstraints(minWidth: 240),
+        decoration: BoxDecoration(
+            color: Colors.white, borderRadius: BorderRadius.circular(10.0)),
+        child: Row(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(right: 4.0, left: 4),
+              child: (name.type.toString() == 'train')
+                  ? const Icon(
+                      Icons.directions_subway_filled_outlined,
+                      size: 38,
+                      color: Color.fromARGB(255, 243, 148, 72),
+                    )
+                  : const Icon(Icons.directions_bus,
+                      size: 38, color: Color.fromARGB(255, 71, 209, 144)),
             ),
-          ),
-          SizedBox(
-            width: 190,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$route',
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      overflow: TextOverflow.ellipsis),
-                ),
-                Text(
-                  '$name',
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-                Text(
-                  '$date',
-                  style: const TextStyle(fontSize: 12),
-                )
-              ],
-            ),
-          )
-        ],
+            SizedBox(
+              width: 190,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$origin - $destination',
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        overflow: TextOverflow.ellipsis),
+                  ),
+                  Text(
+                    '${name.name}',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  Text(
+                    '$date',
+                    style: const TextStyle(fontSize: 12),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
