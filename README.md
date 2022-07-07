@@ -1,4 +1,4 @@
-# RPL_A4 - Public Transport Tracking
+# RPL_A4 - Relocatr Access
 
 [RPL PROJECT] : Public Transport Tracking and Arrival Time Prediction System
 Made by Group 4
